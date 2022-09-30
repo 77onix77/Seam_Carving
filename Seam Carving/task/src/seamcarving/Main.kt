@@ -1,5 +1,6 @@
 package seamcarving
 
+
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
@@ -38,8 +39,18 @@ fun energy (x: Int, y: Int, image: BufferedImage): Double {
     return sqrt(colorX + colorY)
 }
 
+fun transposed(image: BufferedImage): BufferedImage {
+    val newImage = BufferedImage(image.height, image.width,BufferedImage.TYPE_INT_RGB)
+    for (i in 0 until image.height) {
+        for (j in 0 until image.width) {
+            newImage.setRGB(i, j, image.getRGB(j, i))
+        }
+    }
+    return  newImage
+}
+
 fun main(args: Array<String>) {
-    val image: BufferedImage = ImageIO.read(File(args[1]))
+    val image: BufferedImage = transposed(ImageIO.read(File(args[1])))
     val energyArray = Array(image.height){Array(image.width){0.0} }
     val trackArray = Array(image.height){Array(image.width){0.0} }
     var maxEnergy = 0.0
@@ -87,5 +98,5 @@ fun main(args: Array<String>) {
         val newColor = Color(255, 0, 0)
         image.setRGB(jMin, i, newColor.rgb)
     }
-    ImageIO.write(image, "png", File(args[3]))
+    ImageIO.write(transposed(image), "png", File(args[3]))
 }

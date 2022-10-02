@@ -49,16 +49,12 @@ fun transposed(image: BufferedImage): BufferedImage {
     return  newImage
 }
 
-fun main(args: Array<String>) {
-    val image: BufferedImage = transposed(ImageIO.read(File(args[1])))
+fun seamDel(image: BufferedImage): BufferedImage {
     val energyArray = Array(image.height){Array(image.width){0.0} }
     val trackArray = Array(image.height){Array(image.width){0.0} }
-    var maxEnergy = 0.0
+
     for (i in 0 until image.height) {
-        for (j in 0 until image.width) {
-            energyArray[i][j]  =  energy(j, i, image)
-            if (maxEnergy < energyArray[i][j]) maxEnergy = energyArray[i][j]
-        }
+        for (j in 0 until image.width) energyArray[i][j]  =  energy(j, i, image)
     }
 
     for (i in 0 until image.height) {
@@ -83,6 +79,8 @@ fun main(args: Array<String>) {
         }
     }
 
+    val list = mutableListOf<Int>()
+
     for (i in image.height - 1 downTo 0 ) {
         if (i < image.height - 1) {
             val temp = jMin
@@ -95,8 +93,30 @@ fun main(args: Array<String>) {
                 }
             }
         }
-        val newColor = Color(255, 0, 0)
-        image.setRGB(jMin, i, newColor.rgb)
+        list += jMin
     }
+    list.reverse()
+
+    val newImage = BufferedImage(image.width - 1, image.height, BufferedImage.TYPE_INT_RGB)
+    for (i in 0 until image.height) {
+        for (j in 0 until image.width) {
+            if (j == image.width - 1 && list[i] == image.width - 1) continue
+            if (j <= list[i]) newImage.setRGB(j, i, image.getRGB(j, i))
+            else newImage.setRGB(j - 1, i, image.getRGB(j, i))
+        }
+    }
+    return newImage
+}
+
+fun main(args: Array<String>) {
+    var image: BufferedImage = ImageIO.read(File(args[1]))
+
+    for (i in 1..args[5].toInt()) {
+        image = seamDel(image)
+    }
+
+    image = transposed(image)
+    for (i in 1..args[7].toInt()) image = seamDel(image)
+
     ImageIO.write(transposed(image), "png", File(args[3]))
 }
